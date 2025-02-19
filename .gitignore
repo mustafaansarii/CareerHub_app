@@ -1,1 +1,5 @@
-./.env
+# Environment files
+.env
+**/.env
+careerhub_frontend/.env
+careerhub_backend/.env
