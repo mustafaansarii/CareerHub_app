@@ -1,5 +1,6 @@
 # Environment files
 .env
+# Ignore all .env files anywhere in the project
 **/.env
 careerhub_frontend/.env
 careerhub_backend/.env
