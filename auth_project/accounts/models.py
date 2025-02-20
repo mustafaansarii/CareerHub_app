@@ -1,6 +1,6 @@
 import random
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 
 class CustomUserManager(BaseUserManager):
@@ -28,19 +28,21 @@ class CustomUserManager(BaseUserManager):
         )
         return user
 
-class CustomUser(AbstractBaseUser):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
-    otp = models.CharField(max_length=6, blank=True, null=True)
-    otp_created_at = models.DateTimeField(null=True)
     is_oauth = models.BooleanField(default=False)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_created_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["full_name"]
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['full_name']
 
     def __str__(self):
         return self.email
@@ -49,7 +51,7 @@ class CustomUser(AbstractBaseUser):
         return self.is_admin
 
     def has_module_perms(self, app_label):
-        return self.is_admin
+        return True
 
     @property
     def is_staff(self):

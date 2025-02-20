@@ -240,7 +240,12 @@ class GoogleCallback(APIView):
                 'grant_type': 'authorization_code'
             }
             
-            token_response = requests.post(token_url, data=data)
+            # Add proper headers for the request
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+            
+            token_response = requests.post(token_url, data=data, headers=headers)
             token_response.raise_for_status()
             tokens = token_response.json()
             
@@ -261,7 +266,7 @@ class GoogleCallback(APIView):
             user = CustomUser.objects.filter(email=email).first()
             
             if not user:
-                # Create new user
+                # Automatically register and login new user
                 user = CustomUser.objects.create_user(
                     email=email,
                     full_name=user_data.get('name', ''),
@@ -297,7 +302,15 @@ class GoogleCallback(APIView):
             
         except requests.exceptions.HTTPError as e:
             error_response = e.response.json() if e.response else str(e)
-            return Response({'error': f'Google authentication failed: {error_response}'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({
+                'error': 'Google authentication failed',
+                'details': error_response,
+                'debug_info': {
+                    'token_url': token_url,
+                    'redirect_uri': redirect_uri,
+                    'client_id': settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+                }
+            }, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
