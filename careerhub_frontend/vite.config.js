@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/', // Fix: Correct placement of 'base'
   plugins: [react(), tailwindcss()],
   server: {
-    port: 3000,
+    port: 5173,
   },
   build: {
     outDir: 'dist',
