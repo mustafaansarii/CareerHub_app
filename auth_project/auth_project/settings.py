@@ -170,7 +170,7 @@ SIMPLE_JWT = {
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-    os.getenv('LOCAL_FRONTEND_URL').rstrip('/'),
+    os.getenv('FRONTEND_URL').rstrip('/'),
 ]
 
 # Optional: If you want to allow all origins (not recommended for production)
@@ -199,12 +199,19 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 # Remove IS_LOCAL related code and simplify Google OAuth settings
-SOCIAL_AUTH_REDIRECT_URI = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
-FRONTEND_CALLBACK_URL = os.getenv('LOCAL_FRONTEND_URL') + "/api/auth/google/callback"
+SOCIAL_AUTH_REDIRECT_URI = os.getenv('GOOGLE_LOGIN_REDIRECT_URI')
+FRONTEND_CALLBACK_URL = os.getenv('FRONTEND_URL') + "/api/auth/google/callback"
 
 # Set URLs based on local environment
-FRONTEND_URL = os.getenv('LOCAL_FRONTEND_URL')
-GOOGLE_LOGIN_REDIRECT_URI = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
+FRONTEND_URL = os.getenv('FRONTEND_URL')
+GOOGLE_LOGIN_REDIRECT_URI = os.getenv('GOOGLE_LOGIN_REDIRECT_URI')
 
 # Enable compression and caching support
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'google-auth-cache',
+    }
+}

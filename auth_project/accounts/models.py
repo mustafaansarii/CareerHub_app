@@ -29,7 +29,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, db_index=True)
     full_name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -60,3 +60,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def set_unusable_password(self):
         self.is_oauth = True
         super().set_unusable_password()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email', 'is_active']),
+        ]

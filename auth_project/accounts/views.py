@@ -211,7 +211,7 @@ class ForgetPasswordView(APIView):
 
 class GoogleLogin(APIView):
     def get(self, request):
-        redirect_uri = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
+        redirect_uri = os.getenv('GOOGLE_LOGIN_REDIRECT_URI')
         return redirect(f'{os.getenv("GOOGLE_AUTH_URL")}?'
                        f'redirect_uri={redirect_uri}&'
                        f'client_id={settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY}&'
@@ -231,7 +231,7 @@ class GoogleCallback(APIView):
             
             # Exchange authorization code for tokens
             token_url = os.getenv("GOOGLE_TOKEN_URL")
-            redirect_uri = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
+            redirect_uri = os.getenv('GOOGLE_LOGIN_REDIRECT_URI')
             data = {
                 'code': code,
                 'client_id': settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
@@ -240,12 +240,7 @@ class GoogleCallback(APIView):
                 'grant_type': 'authorization_code'
             }
             
-            # Add proper headers for the request
-            headers = {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-            
-            token_response = requests.post(token_url, data=data, headers=headers)
+            token_response = requests.post(token_url, data=data)
             token_response.raise_for_status()
             tokens = token_response.json()
             
@@ -266,7 +261,7 @@ class GoogleCallback(APIView):
             user = CustomUser.objects.filter(email=email).first()
             
             if not user:
-                # Automatically register and login new user
+                # Create new user
                 user = CustomUser.objects.create_user(
                     email=email,
                     full_name=user_data.get('name', ''),
@@ -302,15 +297,7 @@ class GoogleCallback(APIView):
             
         except requests.exceptions.HTTPError as e:
             error_response = e.response.json() if e.response else str(e)
-            return Response({
-                'error': 'Google authentication failed',
-                'details': error_response,
-                'debug_info': {
-                    'token_url': token_url,
-                    'redirect_uri': redirect_uri,
-                    'client_id': settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
-                }
-            }, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': f'Google authentication failed: {error_response}'}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
