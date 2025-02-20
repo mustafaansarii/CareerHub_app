@@ -170,8 +170,7 @@ SIMPLE_JWT = {
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-    os.getenv('FRONTEND_URL'),
-    os.getenv('LIVE_URL'),
+    os.getenv('LOCAL_FRONTEND_URL').rstrip('/'),
 ]
 
 # Optional: If you want to allow all origins (not recommended for production)
@@ -184,7 +183,7 @@ AUTHENTICATION_BACKENDS = (
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile', 'openid']
 
 # Add these to handle the pipeline
 SOCIAL_AUTH_PIPELINE = (
@@ -199,17 +198,13 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
 )
 
-# Google OAuth2 Settings
-SOCIAL_AUTH_REDIRECT_URI = os.getenv('GOOGLE_LOGIN_REDIRECT_URI')
-FRONTEND_CALLBACK_URL = os.getenv('FRONTEND_CALLBACK_URL')
+# Remove IS_LOCAL related code and simplify Google OAuth settings
+SOCIAL_AUTH_REDIRECT_URI = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
+FRONTEND_CALLBACK_URL = os.getenv('LOCAL_FRONTEND_URL') + "/api/auth/google/callback"
 
-# Determine which environment to use
-IS_LOCAL = os.getenv('IS_LOCAL', 'True').lower() == 'true'
-
-# Set URLs based on environment
-FRONTEND_URL = os.getenv('LOCAL_FRONTEND_URL') if IS_LOCAL else os.getenv('LIVE_FRONTEND_URL')
-GOOGLE_LOGIN_REDIRECT_URI = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI') if IS_LOCAL else os.getenv('LIVE_GOOGLE_LOGIN_REDIRECT_URI')
-FRONTEND_CALLBACK_URL = os.getenv('LOCAL_FRONTEND_CALLBACK_URL') if IS_LOCAL else os.getenv('LIVE_FRONTEND_CALLBACK_URL')
+# Set URLs based on local environment
+FRONTEND_URL = os.getenv('LOCAL_FRONTEND_URL')
+GOOGLE_LOGIN_REDIRECT_URI = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
 
 # Enable compression and caching support
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

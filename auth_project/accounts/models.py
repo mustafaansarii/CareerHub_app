@@ -36,7 +36,6 @@ class CustomUser(AbstractBaseUser):
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_created_at = models.DateTimeField(null=True)
     is_oauth = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
 

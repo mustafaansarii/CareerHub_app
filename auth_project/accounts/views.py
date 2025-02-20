@@ -5,7 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import CustomUser
-from careerhub_features.models import UserQuestion
 from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime, timedelta
@@ -212,7 +211,7 @@ class ForgetPasswordView(APIView):
 
 class GoogleLogin(APIView):
     def get(self, request):
-        redirect_uri = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI') if settings.IS_LOCAL else os.getenv('LIVE_GOOGLE_LOGIN_REDIRECT_URI')
+        redirect_uri = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
         return redirect(f'{os.getenv("GOOGLE_AUTH_URL")}?'
                        f'redirect_uri={redirect_uri}&'
                        f'client_id={settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY}&'
@@ -232,7 +231,7 @@ class GoogleCallback(APIView):
             
             # Exchange authorization code for tokens
             token_url = os.getenv("GOOGLE_TOKEN_URL")
-            redirect_uri = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI') if settings.IS_LOCAL else os.getenv('LIVE_GOOGLE_LOGIN_REDIRECT_URI')
+            redirect_uri = os.getenv('LOCAL_GOOGLE_LOGIN_REDIRECT_URI')
             data = {
                 'code': code,
                 'client_id': settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
@@ -309,26 +308,12 @@ class ProfileView(APIView):
         if not user.is_authenticated:
             return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
             
-        # Get user's questions and roadmaps
-        user_questions = UserQuestion.objects.filter(user=user)
-        questions_data = [{
-            'id': uq.question.id,
-            'title': uq.question.title,
-            'topic': uq.question.topic,
-            'is_done': uq.is_done,
-            'completed_at': uq.completed_at
-        } for uq in user_questions]
-        
-        profile_data = {
-            "email": user.email,
-            "full_name": user.full_name,
-            "is_active": user.is_active,
-            "is_oauth": user.is_oauth,
-            "created_at": user.created_at if hasattr(user, 'created_at') else None,
-            "questions": questions_data
-        }
-        
-        return Response(profile_data, status=status.HTTP_200_OK)
+        return Response({
+            'email': user.email,
+            'full_name': user.full_name,
+            'is_active': user.is_active,
+            'is_oauth': user.is_oauth
+        }, status=status.HTTP_200_OK)
 
     def put(self, request):
         user = request.user
@@ -336,23 +321,17 @@ class ProfileView(APIView):
         if not user.is_authenticated:
             return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
             
-        # Prevent OAuth users from changing their email
-        if user.is_oauth:
-            return Response({"error": "OAuth users cannot modify their profile"}, status=status.HTTP_403_FORBIDDEN)
-            
-        full_name = request.data.get("full_name")
-        email = request.data.get("email")
+        full_name = request.data.get('full_name')
         
-        # Update full name if provided
-        if full_name:
-            user.full_name = full_name
+        if not full_name:
+            return Response({"error": "Full name is required"}, status=status.HTTP_400_BAD_REQUEST)
             
-        # Update email if provided
-        if email:
-            if CustomUser.objects.filter(email=email).exclude(pk=user.pk).exists():
-                return Response({"error": "Email already in use"}, status=status.HTTP_400_BAD_REQUEST)
-            user.email = email
-            
+        user.full_name = full_name
         user.save()
         
-        return Response({"message": "Profile updated successfully"}, status=status.HTTP_200_OK)
+        return Response({
+            'message': 'Profile updated successfully',
+            'email': user.email,
+            'full_name': user.full_name
+        }, status=status.HTTP_200_OK)
+

@@ -1,7 +1,7 @@
-const apiBaseUrl = import.meta.env.VITE_BACKEND_API;
+
 
 const config = {
-  Backend_Api: apiBaseUrl,
+  Backend_Api: import.meta.env.VITE_BACKEND_API,
   GoogleLoginUrl: import.meta.env.VITE_GOOGLE_LOGIN_URL,
   GoogleFavicon: "https://www.google.com/favicon.ico"
 };
