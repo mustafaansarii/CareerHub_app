@@ -65,25 +65,29 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="absolute top-4 left-4">
+        <Link to="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors">
+          <FaHome className="mr-2" />
+          <span className="text-sm">Home</span>
+          <span className="mx-2 text-gray-400">/</span>
+          <span className="text-sm text-blue-500">Forgot Password</span>
+        </Link>
+      </div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-md w-full space-y-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20"
+        className="max-w-md w-full space-y-8 p-8"
       >
-        <div className="flex items-center justify-start mb-4">
-          <Link to="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-purple-500 transition-colors">
-            <FaHome className="mr-2" />
-            <span className="text-sm">Home</span>
-          </Link>
-          <span className="mx-2 text-gray-400">/</span>
-          <span className="text-sm text-purple-500">Forgot Password</span>
+        <div className="text-center">
+          <h2 className="mt-6 text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Reset Password
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Enter your email to reset your password
+          </p>
         </div>
-
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Reset Password
-        </h2>
 
         <form className="space-y-5" onSubmit={otpSent ? handleResetPassword : handleSendOTP}>
           <div>
@@ -97,7 +101,7 @@ const ForgotPassword = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700/50 dark:text-white transition-all"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700/50 dark:text-white transition-all"
                 required
                 disabled={otpSent}
               />
@@ -117,7 +121,7 @@ const ForgotPassword = () => {
                     placeholder="Enter OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700/50 dark:text-white transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700/50 dark:text-white transition-all"
                     required
                   />
                 </div>
@@ -137,7 +141,7 @@ const ForgotPassword = () => {
                       setNewPassword(e.target.value);
                       setPasswordError('');
                     }}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700/50 dark:text-white transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700/50 dark:text-white transition-all"
                     required
                   />
                 </div>
@@ -162,14 +166,14 @@ const ForgotPassword = () => {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Remember your password?{' '}
-          <Link to="/login" className="font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 hover:underline">
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 hover:underline">
             Login here
           </Link>
         </p>
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-          <Link to="/register" className="font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 hover:underline">
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 hover:underline">
             Create an account
           </Link>
         </p>
@@ -178,4 +182,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword; 
+export default ForgotPassword;

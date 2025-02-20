@@ -9,10 +9,10 @@ import { logout } from '../auth/authSlice'
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Jobs', href: '/jobs' },
-  { name: 'Companies', href: '/companies' },
+  { name: 'Resume Templates', href: '/resume-templates' },
+  { name: 'DSA Sheet', href: '/dsa-sheet' },
   { name: 'Career Tips', href: '/career-tips' },
-  { name: 'About', href: '/about' },
+  { name: 'Roadmap', href: '/roadmap' },
 ]
 
 export default function NavBar() {
@@ -116,7 +116,7 @@ export default function NavBar() {
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="block px-3 py-1.5 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+                          className="block px-3 py-1.5 text-sm text-gray-7 00 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
                         >
                           Logout
                         </button>
@@ -131,6 +131,7 @@ export default function NavBar() {
               )}
             </div>
           </nav>
+          <div className="border-t border-gray-200 dark:border-gray-700" />
           <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
             <div className="fixed inset-0 z-50 bg-black/50" />
             <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 dark:bg-gray-900 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
@@ -159,7 +160,7 @@ export default function NavBar() {
                       <Link
                         key={item.name}
                         to={item.href}
-                        className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-black dark:text-white hover:text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-black dark:text-white hover:text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-8 00 transition-colors duration-200"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.name}

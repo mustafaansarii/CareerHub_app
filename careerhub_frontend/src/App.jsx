@@ -13,17 +13,18 @@ import Testimonials from './components/Testimonials'
 import ResourceShowcase from './components/ResourceShowcase'
 import FAQSection from './components/FAQSection'
 import Footer from './components/Footer'
-
+import ResumeTemplates from './pages/resume'
 function App() {
   return (
     <Router>
-      <NavBar />
+      
       <Routes>
         <Route
           path="/"
           element={
             <div className="flex flex-col min-h-screen">
               <main className="flex-grow">
+              <NavBar />
                 <Hero />
                 <FeaturesGrid />
                 <ProcessSteps />
@@ -35,32 +36,29 @@ function App() {
             </div>
           }
         />
-        {/* Event Register Route */}
-        
         {/* Login Route */}
         <Route
           path="/login"
-          element={
-            <Login />
-          }
+          element={<Login />}
         />
         {/* Register Route */}
         <Route
           path="/register"
-          element={
-            <Register />
-          }
+          element={<Register />}
         />
         {/* Forgot Password Route */}
         <Route
           path="/forgot-password"
-          element={
-            <ForgotPassword />
-          }
+          element={<ForgotPassword />}
         />
-
-        <Route path="/api/auth/google/callback" element={<GoogleCallback />} />
-
+        <Route 
+          path="/api/auth/google/callback" 
+          element={<GoogleCallback />} 
+        />
+        <Route
+        path='/resume-templates'
+        element={<ResumeTemplates/>}
+        />
       </Routes>
     </Router>
   )
