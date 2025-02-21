@@ -2,6 +2,12 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser
 
+from django.contrib import admin
+
+admin.site.site_header = "CareerHub ADMIN PANEL"
+admin.site.site_title = "CareerHub ADMIN"
+admin.site.index_title = "Welcome to CareerHub Admin Dashboard"
+
 class CustomUserAdmin(UserAdmin):
     # Fields to display in the list view
     list_display = ('email', 'full_name', 'is_active', 'is_admin')
