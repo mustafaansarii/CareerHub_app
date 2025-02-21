@@ -18,6 +18,7 @@ class UserQuestion(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     is_done = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
+    is_favorite = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ['user', 'question']
@@ -37,6 +38,14 @@ class Resume(models.Model):
     def __str__(self):
         return self.title
 
+class UserResume(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
+    is_favorite = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ['user', 'resume']
+
 class Roadmap(models.Model):
     fieldname = models.CharField(max_length=100)
     roadmaplink = models.URLField(max_length=200)
@@ -44,3 +53,11 @@ class Roadmap(models.Model):
 
     def __str__(self):
         return self.fieldname
+
+class UserRoadmap(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE)
+    is_favorite = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ['user', 'roadmap']

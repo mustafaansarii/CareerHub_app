@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .models import Question, UserQuestion, Resume, Roadmap
+from .models import Question, UserQuestion, Resume, Roadmap, UserResume, UserRoadmap
 from .serializers import QuestionSerializer, UserQuestionSerializer, ResumeSerializer, RoadmapSerializer
 
 # Create your views here.
@@ -34,6 +34,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             question_data = QuestionSerializer(question).data
             question_data['is_done'] = user_question.is_done if user_question else False
             question_data['completed_at'] = user_question.completed_at if user_question else None
+            question_data['is_favorite'] = user_question.is_favorite if user_question else False
             questions.append(question_data)
             
         return Response(questions)
@@ -58,6 +59,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
             'completed_at': user_question.completed_at
         })
 
+    @action(detail=True, methods=['POST'])
+    def toggle_favorite(self, request, pk=None):
+        question = self.get_object()
+        user_question, created = UserQuestion.objects.get_or_create(
+            user=request.user,
+            question=question
+        )
+        user_question.is_favorite = not user_question.is_favorite
+        user_question.save()
+        return Response({'is_favorite': user_question.is_favorite})
+
 class ResumeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Resume.objects.all()
     serializer_class = ResumeSerializer
@@ -70,7 +82,61 @@ class ResumeViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(pick=pick)
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        resumes = []
+        
+        for resume in queryset:
+            user_resume = UserResume.objects.filter(
+                user=request.user,
+                resume=resume
+            ).first()
+            
+            resume_data = ResumeSerializer(resume).data
+            resume_data['is_favorite'] = user_resume.is_favorite if user_resume else False
+            resumes.append(resume_data)
+            
+        return Response(resumes)
+
+    @action(detail=True, methods=['POST'])
+    def toggle_favorite(self, request, pk=None):
+        resume = self.get_object()
+        user_resume, created = UserResume.objects.get_or_create(
+            user=request.user,
+            resume=resume
+        )
+        user_resume.is_favorite = not user_resume.is_favorite
+        user_resume.save()
+        return Response({'is_favorite': user_resume.is_favorite})
+
 class RoadmapViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Roadmap.objects.all()
     serializer_class = RoadmapSerializer
     permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        roadmaps = []
+        
+        for roadmap in queryset:
+            user_roadmap = UserRoadmap.objects.filter(
+                user=request.user,
+                roadmap=roadmap
+            ).first()
+            
+            roadmap_data = RoadmapSerializer(roadmap).data
+            roadmap_data['is_favorite'] = user_roadmap.is_favorite if user_roadmap else False
+            roadmaps.append(roadmap_data)
+            
+        return Response(roadmaps)
+
+    @action(detail=True, methods=['POST'])
+    def toggle_favorite(self, request, pk=None):
+        roadmap = self.get_object()
+        user_roadmap, created = UserRoadmap.objects.get_or_create(
+            user=request.user,
+            roadmap=roadmap
+        )
+        user_roadmap.is_favorite = not user_roadmap.is_favorite
+        user_roadmap.save()
+        return Response({'is_favorite': user_roadmap.is_favorite})

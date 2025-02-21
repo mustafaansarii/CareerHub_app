@@ -1,10 +1,13 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Pagination } from '@heroui/react'
 import { Link } from 'react-router-dom'
-import NavBar from '../component/NavBar'
-import Footer from '../components/Footer'
+
+// Lazy load components
+const NavBar = lazy(() => import('../components/NavBar'))
+const Footer = lazy(() => import('../components/Footer'))
+
 const templates = [
   {
     imgLink: "https://i.ibb.co/GQLp66B8/16158.jpg",
@@ -105,19 +108,31 @@ const templates = [
   // Add more templates here...
 ]
 
+// Optimize images with lower quality placeholders
+const optimizedImages = templates.map(template => ({
+  ...template,
+  imgLink: template.imgLink.replace('.jpg', '.webp?q=20') // Convert to webp and lower quality
+}))
+
 export default function ResumeTemplates() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 6
-  const totalPages = Math.ceil(templates.length / itemsPerPage)
+  const totalPages = Math.ceil(optimizedImages.length / itemsPerPage)
 
-  const currentTemplates = templates.slice(
+  const currentTemplates = useMemo(() => optimizedImages.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  )
+  ), [currentPage, itemsPerPage])
 
   return (
     <>
-      <NavBar />
+      <Suspense fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
+        </div>
+      }>
+        <NavBar />
+      </Suspense>
       <section className="py-6 sm:py-10 bg-white dark:bg-gray-900 mt-15">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb Navigation */}
@@ -164,6 +179,8 @@ export default function ResumeTemplates() {
                       alt={template.title} 
                       className="w-full h-auto object-contain"
                       loading="lazy"
+                      width="400"  // Add explicit dimensions
+                      height="600"
                     />
                   </div>
                   <div className="p-3 sm:p-4">
@@ -202,7 +219,13 @@ export default function ResumeTemplates() {
           )}
         </div>
       </section>
-      <Footer />
+      <Suspense fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
+        </div>
+      }>
+        <Footer />
+      </Suspense>
     </>
   )
 }
