@@ -14,8 +14,8 @@ class Question(models.Model):
         return self.title
 
 class UserQuestion(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, db_index=True)
     is_done = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
     is_favorite = models.BooleanField(default=False)

@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from .models import Question, UserQuestion, Resume, Roadmap, UserResume, UserRoadmap
 from .serializers import QuestionSerializer, UserQuestionSerializer, ResumeSerializer, RoadmapSerializer
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Prefetch
 
 # Create your views here.
 
@@ -13,31 +15,51 @@ class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
-        queryset = Question.objects.all()
-        topic = self.request.query_params.get('topic', None)
-        if topic:
-            queryset = queryset.filter(topic=topic)
-        return queryset
+        return Question.objects.all().prefetch_related(
+            Prefetch(
+                'userquestion_set',
+                queryset=UserQuestion.objects.filter(user=self.request.user),
+                to_attr='user_questions'
+            )
+        )
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        questions = []
         
-        for question in queryset:
-            user_question = UserQuestion.objects.filter(
-                user=request.user,
-                question=question
-            ).first()
+        # Get all user questions in a single query
+        user_questions = UserQuestion.objects.filter(
+            user=request.user,
+            question__in=queryset
+        ).select_related('question').values(
+            'question_id',
+            'is_done',
+            'completed_at',
+            'is_favorite'
+        )
+        
+        # Create a lookup dictionary
+        user_question_map = {
+            uq['question_id']: uq 
+            for uq in user_questions
+        }
+        
+        # Serialize all questions at once
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = []
+        
+        for question_data in serializer.data:
+            uq = user_question_map.get(question_data['id'], {})
+            question_data.update({
+                'is_done': uq.get('is_done', False),
+                'completed_at': uq.get('completed_at'),
+                'is_favorite': uq.get('is_favorite', False)
+            })
+            response_data.append(question_data)
             
-            question_data = QuestionSerializer(question).data
-            question_data['is_done'] = user_question.is_done if user_question else False
-            question_data['completed_at'] = user_question.completed_at if user_question else None
-            question_data['is_favorite'] = user_question.is_favorite if user_question else False
-            questions.append(question_data)
-            
-        return Response(questions)
+        return Response(response_data)
 
     @action(detail=True, methods=['POST'])
     def toggle_done(self, request, pk=None):
