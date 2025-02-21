@@ -93,7 +93,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-9 00 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="absolute top-4 left-4">
         <Link to="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors">
           <FaHome className="mr-2" />
