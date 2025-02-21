@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { sendOTP, signup, login, sendOTPForgetPass, resetPassword, googleLogin, googleSignup } from './authService';
+import { sendOTP, signup, login, sendOTPForgetPass, resetPassword, googleLogin, googleSignup, refreshToken, getCookie, logout } from './authService';
 
 const initialState = {
-  user: localStorage.getItem('access_token') ? { token: localStorage.getItem('access_token') } : null,
+  user: getCookie('access_token') ? { token: getCookie('access_token') } : null,
   loading: false,
   error: null,
   isVerified: false,
+  lastRefresh: null
 };
 
 export const sendUserOTP = createAsyncThunk(
@@ -83,6 +84,29 @@ export const googleSignupUser = createAsyncThunk(
   }
 );
 
+export const refreshAccessToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, thunkAPI) => {
+    try {
+      return await refreshToken();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, thunkAPI) => {
+    try {
+      await logout();
+      return true;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -90,11 +114,6 @@ const authSlice = createSlice({
     reset: (state) => {
       state.loading = false;
       state.error = null;
-    },
-    logout: (state) => {
-      state.user = null;
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
     },
     setUser: (state, action) => {
       state.user = action.payload;
@@ -165,9 +184,25 @@ const authSlice = createSlice({
       .addCase(googleSignupUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(refreshAccessToken.fulfilled, (state, action) => {
+        state.user = { token: action.payload };
+        state.lastRefresh = Date.now();
+      })
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.loading = false;
+        state.lastRefresh = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { reset, logout, setUser } = authSlice.actions;
+export const { reset, setUser } = authSlice.actions;
 export default authSlice.reducer;

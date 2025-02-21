@@ -63,5 +63,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         indexes = [
-            models.Index(fields=['email', 'is_active']),
+            models.Index(fields=['email']),
+            models.Index(fields=['otp_created_at']),
+            models.Index(fields=['is_active']),
         ]

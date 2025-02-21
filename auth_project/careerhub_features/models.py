@@ -24,7 +24,7 @@ class UserQuestion(models.Model):
         unique_together = ['user', 'question']
 
     def __str__(self):
-        return f"{self.user.username} - {self.question.title}"
+        return f"{self.user.email} - {self.question.title}"
 
 class Resume(models.Model):
     imglink = models.URLField(max_length=200)
@@ -39,12 +39,15 @@ class Resume(models.Model):
         return self.title
 
 class UserResume(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True)
+    resume = models.ForeignKey(Resume, on_delete=models.CASCADE, db_index=True)
     is_favorite = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ['user', 'resume']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.resume.title}"
 
 class Roadmap(models.Model):
     fieldname = models.CharField(max_length=100)
@@ -55,9 +58,13 @@ class Roadmap(models.Model):
         return self.fieldname
 
 class UserRoadmap(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True)
+    roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, db_index=True)
     is_favorite = models.BooleanField(default=False)
+    last_accessed = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ['user', 'roadmap']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.roadmap.fieldname}"

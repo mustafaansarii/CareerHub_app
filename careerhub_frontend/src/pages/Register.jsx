@@ -93,13 +93,13 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-9 00 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
       <div className="absolute top-4 left-4">
         <Link to="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors">
           <FaHome className="mr-2" />
           <span className="text-sm">Home</span>
           <span className="mx-2 text-gray-400">/</span>
-          <span className="text-sm text-blue-500">Register</span>
+          <span className="text-sm text-blue-500">Sign up</span>
         </Link>
       </div>
       <motion.div 
@@ -165,7 +165,7 @@ const Register = () => {
                   placeholder="Enter OTP"
                   value={formData.otp}
                   onChange={(e) => setFormData({...formData, otp: e.target.value})}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700/50 dark:text-white transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-7 00/50 dark:text-white transition-all"
                   required
                 />
               </div>
@@ -190,7 +190,7 @@ const Register = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-7 00 dark:text-gray-300 mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                 <FaLock className="h-5 w-5" />
@@ -212,9 +212,17 @@ const Register = () => {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+            disabled={registering}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50"
           >
-            Register
+            {registering ? (
+              <div className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <span>Signing up...</span>
+              </div>
+            ) : (
+              'Sign up'
+            )}
           </button>
           
           <div className="relative">

@@ -37,10 +37,10 @@ export default function Hero() {
               Get Career Advice
             </Link>
             <Link
-              to="/jobs"
+              to="/dsa-sheet"
               className="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-blue-600 text-base font-medium rounded-md text-blue-600 bg-transparent hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             >
-              Find Your Dream Job
+              Prepare for DSA
             </Link>
           </motion.div>
           <div className="w-full mt-12 sm:mt-16 md:mt-20">

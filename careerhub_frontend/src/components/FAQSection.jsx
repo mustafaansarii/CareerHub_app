@@ -14,6 +14,30 @@ export default function FAQSection() {
     {
       question: "Are the coding problems updated regularly?",
       answer: "We update our question bank weekly with new problems"
+    },
+    {
+      question: "How can I improve my problem-solving skills?",
+      answer: "Start with basic problems, analyze patterns, and practice consistently. Our DSA sheet provides a structured approach to build your skills"
+    },
+    {
+      question: "I'm confused about my career path. Can you help?",
+      answer: "Absolutely! We provide comprehensive roadmaps for various tech careers to help you make informed decisions"
+    },
+    {
+      question: "What resources are best for beginners?",
+      answer: "We recommend starting with our beginner-friendly resources section, which includes curated tutorials and learning paths"
+    },
+    {
+      question: "How do I prepare for technical interviews?",
+      answer: "Our platform offers interview preparation guides, mock interview questions, and coding challenges to help you ace your interviews"
+    },
+    {
+      question: "Is there guidance for non-CS students entering tech?",
+      answer: "Yes, we have special resources and roadmaps tailored for students transitioning from other fields into tech careers"
+    },
+    {
+      question: "How can I stay motivated during my learning journey?",
+      answer: "Set small achievable goals, track your progress, and connect with our community for support and encouragement"
     }
   ]
 

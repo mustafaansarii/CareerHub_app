@@ -101,6 +101,8 @@ DATABASES = {
         'OPTIONS': {
             'sslmode': os.getenv('DB_SSLMODE'),
         },
+        'CONN_MAX_AGE': 60,  # Keep database connections open for 60 seconds
+        'DISABLE_SERVER_SIDE_CURSORS': True,  # For large datasets
     }
 }
 
@@ -160,6 +162,13 @@ DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 15,  # 15 minutes
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
     )
 }
 
@@ -209,9 +218,3 @@ GOOGLE_LOGIN_REDIRECT_URI = os.getenv('GOOGLE_LOGIN_REDIRECT_URI')
 # Enable compression and caching support
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'google-auth-cache',
-    }
-}

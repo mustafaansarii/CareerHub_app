@@ -4,11 +4,12 @@ import config from '../config'
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import { PencilSquareIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import useSWR from 'swr';
 
-const fetchProfile = async () => {
+const fetchProfile = async (url) => {
   try {
     const token = localStorage.getItem('access_token');
-    const response = await axios.get(`${config.Backend_Api}/api/auth/profile/`, {
+    const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -41,45 +42,44 @@ const updateProfileName = async (newName) => {
 };
 
 const Profile = () => {
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: profileData, error, mutate } = useSWR(`${config.Backend_Api}/api/auth/profile/`, fetchProfile, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshWhenOffline: false,
+    refreshWhenHidden: false,
+    refreshInterval: 0,
+    dedupingInterval: 60000,
+    focusThrottleInterval: 60000,
+    shouldRetryOnError: false,
+    keepPreviousData: true
+  });
+  
   const [editMode, setEditMode] = useState(false);
   const [newName, setNewName] = useState('');
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    const getProfile = async () => {
-      try {
-        const data = await fetchProfile();
-        setProfileData(data);
-        setNewName(data.full_name);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getProfile();
-  }, []);
+    if (profileData) {
+      setNewName(profileData.full_name);
+    }
+  }, [profileData]);
 
   const handleUpdateName = async () => {
     try {
       setUpdating(true);
       const updatedProfile = await updateProfileName(newName);
-      setProfileData(updatedProfile);
+      mutate(updatedProfile, false);
       setEditMode(false);
     } catch (err) {
-      setError(err.message);
+      console.error('Error updating name:', err);
     } finally {
       setUpdating(false);
     }
   };
 
-  if (loading) return (
+  if (!profileData && !error) return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 dark:border-gray-100"></div>
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
     </div>
   );
 
@@ -87,7 +87,7 @@ const Profile = () => {
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-100 px-4 py-3 rounded relative" role="alert">
         <strong className="font-bold">Error:</strong>
-        <span className="block sm:inline"> {error}</span>
+        <span className="block sm:inline"> {error.message}</span>
       </div>
     </div>
   );

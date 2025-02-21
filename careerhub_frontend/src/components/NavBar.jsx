@@ -5,13 +5,14 @@ import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, UserCircleIcon } from '@heroicons/react/24/outline'
 import { Link, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { logout } from '../auth/authSlice'
+import { logoutUser } from '../auth/authSlice'
+import { getCookie } from '../auth/authService'
 
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Resume Templates', href: '/resume-templates' },
   { name: 'DSA Sheet', href: '/dsa-sheet' },
-  { name: 'Career Tips', href: '/career-tips' },
+  { name: 'Resources', href: '/resources' },
   { name: 'Roadmap', href: '/roadmap' },
 ]
 
@@ -31,17 +32,14 @@ export default function NavBar() {
     }
   }, [location]);
 
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token && !user) {
-      dispatch({ type: 'auth/setUser', payload: { token } });
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      setIsMenuOpen(false);
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
-  }, [dispatch, user]);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    setIsMenuOpen(false);
-    window.location.href = '/login';
   };
 
   const handleClickOutside = (event) => {

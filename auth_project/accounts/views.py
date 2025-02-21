@@ -14,15 +14,20 @@ from django.shortcuts import redirect
 from django.conf import settings
 from django.urls import reverse
 from urllib.parse import urlencode
+from django.db import transaction
+from django.core.cache import cache
 
 class SendOTPView(APIView):
+    @transaction.atomic
     def post(self, request):
-        email = request.data.get("email")
+        email = request.data.get("email").lower()
         
         if not email:
             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
             
-        user = CustomUser.objects.filter(email=email).first()
+        user = CustomUser.objects.filter(email=email).only(
+            'email', 'is_active', 'otp', 'otp_created_at'
+        ).first()
         
         # Check if user exists and is already active
         if user and user.is_active:
@@ -38,15 +43,23 @@ class SendOTPView(APIView):
             user.save()
         else:
             # Create temporary user record
-            user = CustomUser.objects.create_user(
+            user, created = CustomUser.objects.update_or_create(
                 email=email,
-                full_name="Temporary",  # Will be updated in signup
-                password="temporary",  # Will be updated in signup
-                is_active=False
+                defaults={
+                    'full_name': "Temporary",  # Will be updated in signup
+                    'password': "temporary",  # Will be updated in signup
+                    'is_active': False,
+                    'otp': otp,
+                    'otp_created_at': timezone.now()
+                }
             )
-            user.otp = otp
-            user.otp_created_at = timezone.now()
-            user.save()
+        
+        # Cache the OTP verification data
+        cache_key = f'otp_{email}'
+        cache.set(cache_key, {
+            'otp': otp,
+            'created_at': timezone.now().isoformat()
+        }, timeout=300)  # 5 minutes
         
         if not self.send_otp_email(email, otp):
             return Response({"error": "Failed to send OTP email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -71,13 +84,16 @@ class SendOTPView(APIView):
             return False
 
 class SignupView(APIView):
+    @transaction.atomic
     def post(self, request):
-        email = request.data.get("email")
+        email = request.data.get("email").lower()
         full_name = request.data.get("full_name")
         password = request.data.get("password")
         otp = request.data.get("otp")
 
-        user = CustomUser.objects.filter(email=email).first()
+        user = CustomUser.objects.select_for_update().filter(email=email).only(
+            'otp', 'otp_created_at', 'is_active', 'full_name'
+        ).first()
         
         if not user:
             return Response({"error": "User not found. Please request OTP first."}, status=status.HTTP_400_BAD_REQUEST)
@@ -101,10 +117,31 @@ class SignupView(APIView):
 
 class VerifyOTPView(APIView):
     def post(self, request):
-        email = request.data.get("email")
+        email = request.data.get("email").lower()
         otp = request.data.get("otp")
 
-        user = CustomUser.objects.filter(email=email, otp=otp).first()
+        # Check cache first
+        cache_key = f'otp_{email}'
+        cached_otp = cache.get(cache_key)
+        
+        if cached_otp:
+            if cached_otp['otp'] == otp:
+                # Check if OTP is expired (5 minutes)
+                if timezone.now() > timezone.datetime.fromisoformat(cached_otp['created_at']) + timedelta(minutes=5):
+                    return Response({"error": "OTP has expired."}, status=status.HTTP_400_BAD_REQUEST)
+                
+                user = CustomUser.objects.get(email=email)
+                user.is_active = True
+                user.otp = None
+                user.otp_created_at = None
+                user.save()
+                cache.delete(cache_key)
+                return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
+
+        # Fallback to database check
+        user = CustomUser.objects.filter(email=email).only(
+            'otp', 'otp_created_at', 'is_active'
+        ).first()
         if user:
             # Check if OTP is expired (5 minutes)
             if timezone.now() > user.otp_created_at + timedelta(minutes=5):
@@ -120,7 +157,7 @@ class VerifyOTPView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
-        email = request.data.get("email")
+        email = request.data.get("email").lower()
         password = request.data.get("password")
 
         user = authenticate(email=email, password=password)
@@ -240,7 +277,7 @@ class GoogleCallback(APIView):
                 'grant_type': 'authorization_code'
             }
             
-            token_response = requests.post(token_url, data=data)
+            token_response = requests.post(token_url, data=data, timeout=3)
             token_response.raise_for_status()
             tokens = token_response.json()
             
@@ -249,7 +286,7 @@ class GoogleCallback(APIView):
             headers = {
                 'Authorization': f'Bearer {tokens["access_token"]}'
             }
-            userinfo_response = requests.get(userinfo_url, headers=headers)
+            userinfo_response = requests.get(userinfo_url, headers=headers, timeout=3)
             userinfo_response.raise_for_status()
             user_data = userinfo_response.json()
             

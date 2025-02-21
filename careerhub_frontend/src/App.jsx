@@ -16,6 +16,11 @@ import Footer from './components/Footer'
 import ResumeTemplates from './pages/resume'
 import Profile from './pages/profile'
 import DSAPage from './pages/dsa'
+import Roadmap from './pages/roadmap'
+import Resources from './pages/Resources'
+import ProtectedRoute from './components/ProtectedRoute'
+import NotFound from './pages/NotFound'
+
 function App() {
   return (
     <Router>
@@ -59,19 +64,49 @@ function App() {
         />
         <Route
         path='/resume-templates'
-        element={<ResumeTemplates/>}
+        element={
+          <ProtectedRoute>
+            <ResumeTemplates/>
+          </ProtectedRoute>
+        }
         />
         <Route
         path='/profile'
-        element={<Profile/>}
+        element={
+          <ProtectedRoute>
+            <Profile/>
+          </ProtectedRoute>
+        }
         />
         <Route
         path='/dsa-sheet'
-        element={<DSAPage/>}
+        element={
+          <ProtectedRoute>
+            <DSAPage/>
+          </ProtectedRoute>
+        }
         />
+        <Route
+        path='/roadmap'
+        element={
+          <ProtectedRoute>
+            <Roadmap/>
+          </ProtectedRoute>
+        }
+        />
+        <Route
+        path='/resources'
+        element={
+          <ProtectedRoute>
+            <Resources/>
+          </ProtectedRoute>
+        }
+        />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   )
 }
 
 export default App
+  

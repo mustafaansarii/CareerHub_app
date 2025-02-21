@@ -7,7 +7,8 @@ from django.utils import timezone
 from .models import Question, UserQuestion, Resume, Roadmap, UserResume, UserRoadmap
 from .serializers import QuestionSerializer, UserQuestionSerializer, ResumeSerializer, RoadmapSerializer
 from rest_framework.pagination import PageNumberPagination
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Exists, OuterRef, Case, When, Value, BooleanField
+from django.db.models.functions import Coalesce
 
 # Create your views here.
 
@@ -18,53 +19,43 @@ class QuestionViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
-        return Question.objects.all().prefetch_related(
-            Prefetch(
-                'userquestion_set',
-                queryset=UserQuestion.objects.filter(user=self.request.user),
-                to_attr='user_questions'
-            )
-        )
+        user = self.request.user
+        return Question.objects.annotate(
+            is_done=Coalesce(
+                UserQuestion.objects.filter(
+                    question=OuterRef('pk'),
+                    user=user
+                ).values('is_done')[:1],
+                Value(False)
+            ),
+            is_favorite=Coalesce(
+                UserQuestion.objects.filter(
+                    question=OuterRef('pk'),
+                    user=user
+                ).values('is_favorite')[:1],
+                Value(False)
+            ),
+            completed_at=UserQuestion.objects.filter(
+                question=OuterRef('pk'),
+                user=user
+            ).values('completed_at')[:1]
+        ).prefetch_related('userquestion_set')
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
         
-        # Get all user questions in a single query
-        user_questions = UserQuestion.objects.filter(
-            user=request.user,
-            question__in=queryset
-        ).select_related('question').values(
-            'question_id',
-            'is_done',
-            'completed_at',
-            'is_favorite'
-        )
-        
-        # Create a lookup dictionary
-        user_question_map = {
-            uq['question_id']: uq 
-            for uq in user_questions
-        }
-        
-        # Serialize all questions at once
-        serializer = self.get_serializer(queryset, many=True)
-        response_data = []
-        
-        for question_data in serializer.data:
-            uq = user_question_map.get(question_data['id'], {})
-            question_data.update({
-                'is_done': uq.get('is_done', False),
-                'completed_at': uq.get('completed_at'),
-                'is_favorite': uq.get('is_favorite', False)
-            })
-            response_data.append(question_data)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
             
-        return Response(response_data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['POST'])
     def toggle_done(self, request, pk=None):
         question = self.get_object()
-        user_question, created = UserQuestion.objects.get_or_create(
+        user_question, created = UserQuestion.objects.select_related('question').get_or_create(
             user=request.user,
             question=question
         )
@@ -84,7 +75,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['POST'])
     def toggle_favorite(self, request, pk=None):
         question = self.get_object()
-        user_question, created = UserQuestion.objects.get_or_create(
+        user_question, created = UserQuestion.objects.select_related('question').get_or_create(
             user=request.user,
             question=question
         )
@@ -98,27 +89,27 @@ class ResumeViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Resume.objects.all()
-        pick = self.request.query_params.get('pick', None)
-        if pick:
-            queryset = queryset.filter(pick=pick)
-        return queryset
+        user = self.request.user
+        return Resume.objects.annotate(
+            is_favorite=Coalesce(
+                UserResume.objects.filter(
+                    resume=OuterRef('pk'),
+                    user=user
+                ).values('is_favorite')[:1],
+                Value(False)
+            )
+        ).prefetch_related('userresume_set')
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        resumes = []
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
         
-        for resume in queryset:
-            user_resume = UserResume.objects.filter(
-                user=request.user,
-                resume=resume
-            ).first()
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
             
-            resume_data = ResumeSerializer(resume).data
-            resume_data['is_favorite'] = user_resume.is_favorite if user_resume else False
-            resumes.append(resume_data)
-            
-        return Response(resumes)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['POST'])
     def toggle_favorite(self, request, pk=None):
@@ -136,21 +127,32 @@ class RoadmapViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RoadmapSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        return Roadmap.objects.annotate(
+            is_favorite=Coalesce(
+                UserRoadmap.objects.filter(
+                    roadmap=OuterRef('pk'),
+                    user=user
+                ).values('is_favorite')[:1],
+                Value(False)
+            ),
+            last_accessed=UserRoadmap.objects.filter(
+                roadmap=OuterRef('pk'),
+                user=user
+            ).values('last_accessed')[:1]
+        ).prefetch_related('userroadmap_set')
+
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        roadmaps = []
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
         
-        for roadmap in queryset:
-            user_roadmap = UserRoadmap.objects.filter(
-                user=request.user,
-                roadmap=roadmap
-            ).first()
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
             
-            roadmap_data = RoadmapSerializer(roadmap).data
-            roadmap_data['is_favorite'] = user_roadmap.is_favorite if user_roadmap else False
-            roadmaps.append(roadmap_data)
-            
-        return Response(roadmaps)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['POST'])
     def toggle_favorite(self, request, pk=None):
@@ -162,3 +164,14 @@ class RoadmapViewSet(viewsets.ReadOnlyModelViewSet):
         user_roadmap.is_favorite = not user_roadmap.is_favorite
         user_roadmap.save()
         return Response({'is_favorite': user_roadmap.is_favorite})
+
+    @action(detail=True, methods=['POST'])
+    def update_last_accessed(self, request, pk=None):
+        roadmap = self.get_object()
+        user_roadmap, created = UserRoadmap.objects.get_or_create(
+            user=request.user,
+            roadmap=roadmap
+        )
+        user_roadmap.last_accessed = timezone.now()
+        user_roadmap.save()
+        return Response({'last_accessed': user_roadmap.last_accessed})
