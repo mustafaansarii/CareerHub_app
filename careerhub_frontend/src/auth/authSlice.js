@@ -9,6 +9,22 @@ const initialState = {
   lastRefresh: null
 };
 
+// Add this function to clear local storage
+const clearLocalStorageAfterInterval = () => {
+  const TWENTY_THREE_HOURS = 23 * 60 * 60 * 1000;
+  const lastClearTime = localStorage.getItem('lastClearTime');
+  const currentTime = Date.now();
+
+  if (!lastClearTime || (currentTime - lastClearTime) >= TWENTY_THREE_HOURS) {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.setItem('lastClearTime', currentTime.toString());
+  }
+};
+
+// Call the function when the slice is initialized
+clearLocalStorageAfterInterval();
+
 export const sendUserOTP = createAsyncThunk(
   'auth/sendOTP',
   async (email, thunkAPI) => {
