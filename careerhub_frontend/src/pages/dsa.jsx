@@ -223,16 +223,24 @@ export default function DSAPage() {
                                         toggleCompleted(question.id);
                                       }}
                                       disabled={loadingComplete === question.id}
-                                      className={`text-sm px-2 py-1 rounded ${
+                                      className={`p-1 rounded transition-colors ${
                                         question.is_done 
-                                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                          ? 'text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300'
+                                          : 'text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400'
                                       }`}
                                     >
                                       {loadingComplete === question.id ? (
                                         <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                       ) : (
-                                        question.is_done ? 'Completed' : 'Mark Complete'
+                                        question.is_done ? (
+                                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                          </svg>
+                                        ) : (
+                                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        )
                                       )}
                                     </button>
                                   </td>
