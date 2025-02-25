@@ -183,11 +183,8 @@ class RoadmapViewSet(viewsets.ReadOnlyModelViewSet):
     
 
 
-
-client = OpenAI(
-    base_url="https://api.aimlapi.com/v1",
-    api_key=os.environ.get("LLM_API_KEY"),
-)
+# Initialize the client
+client = genai.Client(api_key=os.environ.get("LLM_API_KEY"))
 
 @api_view(['POST'])
 def generate(request):
@@ -196,16 +193,12 @@ def generate(request):
         if not prompt:
             return Response({'error': 'Prompt is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are an AI assistant who knows everything."},
-                {"role": "user", "content": prompt},
-            ],
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
         )
         
-        return Response({'response': response.choices[0].message.content})
-        
+        return Response({'response': response.text})
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
