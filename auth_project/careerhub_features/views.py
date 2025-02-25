@@ -13,7 +13,7 @@ from google import genai
 import os
 from django.http import StreamingHttpResponse
 import json
-
+from openai import OpenAI
 # Create your views here.
 
 class QuestionViewSet(viewsets.ModelViewSet):
@@ -184,6 +184,11 @@ class RoadmapViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 
+client = OpenAI(
+    base_url="https://api.aimlapi.com/v1",
+    api_key=os.environ.get("LLM_API_KEY"),
+)
+
 @api_view(['POST'])
 def generate(request):
     try:
@@ -191,13 +196,15 @@ def generate(request):
         if not prompt:
             return Response({'error': 'Prompt is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        import google.generativeai as genai  # Correct import
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are an AI assistant who knows everything."},
+                {"role": "user", "content": prompt},
+            ],
+        )
         
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(prompt)
-        
-        return Response({'response': response.text})
+        return Response({'response': response.choices[0].message.content})
         
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
