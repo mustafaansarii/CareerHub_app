@@ -151,6 +151,7 @@ const DjangoTutorials = () => {
     }
   }, []);
 
+  NProgress.configure({ showSpinner: false }); 
   const handleTopicClick = async (topicPrompt, topicId) => {
     if (cachedResponses[topicId]) {
       setResult(cachedResponses[topicId]);
@@ -207,14 +208,8 @@ const DjangoTutorials = () => {
     
     const handleCopy = async (code, index) => {
       await navigator.clipboard.writeText(code);
-      toast.success('Copied to clipboard!', {
-        icon: '📋',
-        style: {
-          borderRadius: '8px',
-          background: '#1e1e1e',
-          color: '#fff',
-        },
-      });
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 1000);
     };
 
     return parts.map((part, index) => {
@@ -224,18 +219,52 @@ const DjangoTutorials = () => {
         const code = match?.[2] || '';
         
         return (
-          <div key={`code-${index}`} className="relative group my-6">
-            <div className="flex justify-between items-center bg-gray-800 text-gray-300 px-4 py-2 rounded-t-lg">
+          <div key={`code-${index}`} className="relative group my-4 md:my-6">
+            <div className="flex justify-between items-center bg-gray-800 text-gray-300 px-3 md:px-4 py-1.5 md:py-2 rounded-t-lg">
               <span className="text-xs font-mono">{language}</span>
               <button
                 onClick={() => handleCopy(code, index)}
-                className="hover:bg-gray-700 p-1 rounded-md transition-colors"
-                data-tooltip-id="copy-tooltip"
-                data-tooltip-content="Copy code"
+                className="hover:bg-gray-700 p-1 rounded-md transition-colors relative active:scale-95"
+                aria-label="Copy code"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+                <motion.div
+                  className="absolute inset-0"
+                  initial={false}
+                  animate={copiedIndex === index ? "copied" : "normal"}
+                  variants={{
+                    copied: { opacity: 1, scale: 1 },
+                    normal: { opacity: 0, scale: 0 }
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <svg
+                    className="w-4 h-4 text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+                <motion.div
+                  className="absolute inset-0"
+                  initial={false}
+                  animate={copiedIndex === index ? "copied" : "normal"}
+                  variants={{
+                    copied: { opacity: 0, scale: 0 },
+                    normal: { opacity: 1, scale: 1 }
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </motion.div>
               </button>
             </div>
             <SyntaxHighlighter
@@ -243,13 +272,19 @@ const DjangoTutorials = () => {
               style={vs2015}
               showLineNumbers
               wrapLines
-              lineNumberStyle={{ color: '#858585', minWidth: '2.5em' }}
+              lineNumberStyle={{ 
+                color: '#858585', 
+                minWidth: '2.5em',
+                display: window.innerWidth < 768 ? 'none' : 'block'
+              }}
               customStyle={{
                 margin: 0,
                 borderRadius: '0 0 8px 8px',
-                padding: '1rem',
+                padding: '0.75rem',
                 fontSize: '0.875rem',
                 lineHeight: '1.5',
+                width: 'calc(100vw - 2rem)',
+                maxWidth: '100%',
               }}
             >
               {code}
@@ -259,12 +294,14 @@ const DjangoTutorials = () => {
       }
       
       return (
-        <div key={`text-${index}`} className="prose prose-gray max-w-none my-6">
+        <div key={`text-${index}`} className="prose prose-sm md:prose-base max-w-none my-4 md:my-6 w-full overflow-x-hidden">
           <ReactMarkdown
             components={{
-              h2: ({ children }) => <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-900 border-b pb-2">{children}</h2>,
-              h3: ({ children }) => <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-800">{children}</h3>,
-              code: ({ children }) => <code className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md font-mono text-sm">{children}</code>,
+              h2: ({ children }) => <h2 className="text-xl md:text-2xl font-bold mt-6 md:mt-8 mb-3 md:mb-4 text-gray-900 border-b pb-2">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-lg md:text-xl font-semibold mt-4 md:mt-6 mb-2 md:mb-3 text-gray-800">{children}</h3>,
+              code: ({ children }) => <code className="bg-gray-100 text-gray-700 px-1.5 py-0.5 md:px-2 md:py-1 rounded-md font-mono text-sm md:text-base break-words">{
+                String(children).replace(/\n$/, '')
+              }</code>,
               a: ({ children, href }) => (
                 <a 
                   href={href} 
@@ -275,14 +312,44 @@ const DjangoTutorials = () => {
                   {children}
                 </a>
               ),
-              table: ({ children }) => <div className="overflow-x-auto"><table className="min-w-full divide-y divide-gray-200">{children}</table></div>,
-              th: ({ children }) => <th className="px-4 py-3 bg-gray-50 text-left text-sm font-medium text-gray-700">{children}</th>,
-              td: ({ children }) => <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{children}</td>,
+              table: ({ children }) => (
+                <div className="overflow-x-auto w-full my-4 md:my-6">
+                  <table className="min-w-full divide-y divide-gray-200 text-sm md:text-base">
+                    {children}
+                  </table>
+                </div>
+              ),
+              thead: ({ children }) => (
+                <thead className="bg-gray-50">
+                  {children}
+                </thead>
+              ),
+              tbody: ({ children }) => (
+                <tbody className="divide-y divide-gray-200">
+                  {children}
+                </tbody>
+              ),
+              tr: ({ children }) => (
+                <tr className="hover:bg-gray-50 transition-colors">
+                  {children}
+                </tr>
+              ),
+              th: ({ children }) => (
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 whitespace-nowrap">
+                  {children}
+                </th>
+              ),
+              td: ({ children }) => (
+                <td className="px-4 py-3 text-sm text-gray-700 whitespace-normal">
+                  {children}
+                </td>
+              ),
+              p: ({ children }) => <p className="my-3 md:my-4">{children}</p>,
             }}
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeSlug]}
           >
-            {part}
+            {part.replace(/\n/gi, '\n\n')}
           </ReactMarkdown>
         </div>
       );
@@ -340,7 +407,6 @@ const DjangoTutorials = () => {
   return (
     <>
       <NavBar/>
-      <Toaster position="top-right" reverseOrder={false} />
       <Tooltip id="copy-tooltip" className="!rounded-md !text-xs !py-1 !px-2" />
       
       <div className="flex flex-col min-h-screen mt-15 md:mt-15 bg-white">
@@ -386,7 +452,7 @@ const DjangoTutorials = () => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="absolute left-0 top-0 h-full w-[85%] max-w-xs bg-white shadow-xl mt-16 border-r-2 border-indigo-500/30 overflow-hidden"
+              className="absolute left-0 top-0 h-full w-[90%] max-w-[320px] bg-white shadow-xl mt-16 border-r-2 border-indigo-500/30 overflow-hidden touch-manipulation"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-4 pt-5 border-b border-gray-200 bg-gradient-to-r from-indigo-50/70 to-blue-50/70">
@@ -452,8 +518,8 @@ const DjangoTutorials = () => {
           </motion.div>
 
           {/* Main Content */}
-          <div className="flex-1 p-3 sm:p-6 md:p-8 bg-white md:ml-64 lg:ml-72">
-            <div className="max-w-4xl mx-auto">
+          <div className="flex-1 p-4 sm:p-6 md:p-8 bg-white md:ml-64 lg:ml-72">
+            <div className="max-w-4xl mx-auto w-full">
               <div className="mb-8">
                 <nav className="flex" aria-label="Breadcrumb">
                   <ol className="inline-flex items-center space-x-1 text-sm">
@@ -466,18 +532,19 @@ const DjangoTutorials = () => {
                     </li>
                   </ol>
                 </nav>
-                <h1 className="text-3xl font-bold mt-4 text-gray-900">Django Development Masterclass</h1>
+                <h1 className="text-3xl font-bold mt-4 text-gray-900">{selectedTopic?.title}</h1>
               </div>
 
               {isLoading ? (
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <SkeletonTheme baseColor="#f3f4f6" highlightColor="#e5e7eb">
-                    <Skeleton height={40} width={300} />
-                    <Skeleton height={200} count={3} />
+                    <Skeleton height={32} width={240} className="md:hidden" />
+                    <Skeleton height={40} width={300} className="hidden md:block" />
+                    <Skeleton height={160} count={3} className="rounded-lg" />
                   </SkeletonTheme>
                 </div>
               ) : result ? (
-                <article className="prose prose-indigo max-w-none">
+                <article className="prose prose-indigo max-w-none w-full px-0 md:px-0">
                   {result.startsWith('Error:') ? (
                     <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                       <div className="flex items-center text-red-700">

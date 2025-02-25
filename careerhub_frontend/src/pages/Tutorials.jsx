@@ -10,12 +10,58 @@ const Tutorials = () => {
   const [activeSubject, setActiveSubject] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const categories = {
-    'Core CS': ['Algorithms', 'Compiler Design', 'Computer Networks', 'Cybersecurity', 'Databases', 'Data Structures', 'Distributed Computing', 'Operating Systems', 'Software Engineering', 'Theory of Computation'],
-    'Frontend': ['React', 'Angular', 'Vue', 'Svelte', 'Next.js'],
-    'Backend': ['Spring Boot', 'Flask', 'Express', 'Django', 'Node.js'],
-    'Languages': ['C++', 'C#', 'Go', 'Java', 'JavaScript', 'PHP', 'Python', 'Ruby', 'Swift', 'TypeScript'],
-  };
+  const categories = [
+    {
+      name: 'Core CS',
+      subjects: [
+        { name: 'Algorithms', description: 'Learn about the principles of algorithms and their implementation in various programming languages.', url: 'algorithms' },
+        { name: 'Compiler Design', description: 'Explore the design and implementation of compilers, including lexical analysis, parsing, and code generation.', url: 'compiler-design' },
+        { name: 'Computer Networks', description: 'Study the principles of computer networks, including protocols, topologies, and network security.', url: 'computer-networks' },
+        { name: 'Cybersecurity', description: 'Learn about the principles of cybersecurity, including cryptography, network security, and ethical hacking.', url: 'cybersecurity' },
+        { name: 'Databases', description: 'Study the design and implementation of databases, including relational and non-relational databases.', url: 'databases' },
+        { name: 'Data Structures', description: 'Learn about the principles of data structures and their implementation in various programming languages.', url: 'data-structures' },
+        { name: 'Distributed Computing', description: 'Study the principles of distributed computing, including distributed systems, parallel computing, and cloud computing.', url: 'distributed-computing' },
+        { name: 'Operating Systems', description: 'Study the principles of operating systems, including process management, memory management, and file systems.', url: 'operating-systems' },
+        { name: 'Software Engineering', description: 'Learn about the principles of software engineering, including software development, testing, and maintenance.', url: 'software-engineering' },
+        { name: 'Theory of Computation', description: 'Study the principles of theory of computation, including automata theory, computability, and complexity theory.', url: 'theory-of-computation' },
+      ]
+    },
+    {
+      name: 'Frontend',
+      subjects: [
+        { name: 'React', description: 'Learn about the principles of React, including state management, component-based architecture, and virtual DOM.', url: 'react' },
+        { name: 'Angular', description: 'Learn about the principles of Angular, including dependency injection, routing, and testing.', url: 'angular' },
+        { name: 'Vue', description: 'Learn about the principles of Vue, including reactive programming, component-based architecture, and virtual DOM.', url: 'vue' },
+        { name: 'Svelte', description: 'Learn about the principles of Svelte, including reactive programming, component-based architecture, and virtual DOM.', url: 'svelte' },
+        { name: 'Next.js', description: 'Learn about the principles of Next.js, including server-side rendering, static site generation, and API routes.', url: 'nextjs' },
+      ]
+    },
+    {
+      name: 'Backend',
+      subjects: [
+        { name: 'Spring Boot', description: 'Learn about the principles of Spring Boot, including dependency injection, routing, and testing.', url: 'spring-boot' },
+        { name: 'Flask', description: 'Learn about the principles of Flask, including dependency injection, routing, and testing.', url: 'flask' },
+        { name: 'Express', description: 'Learn about the principles of Express, including dependency injection, routing, and testing.', url: 'express' },
+        { name: 'Django', description: 'Learn about the principles of Django, including dependency injection, routing, and testing.', url: 'django' },
+        { name: 'Node.js', description: 'Learn about the principles of Node.js, including dependency injection, routing, and testing.', url: 'nodejs' },
+      ]
+    },
+    {
+      name: 'Languages',
+      subjects: [
+        { name: 'C++', description: 'Learn about the principles of C++, including object-oriented programming, polymorphism, and inheritance.', url: 'c++' },
+        { name: 'C#', description: 'Learn about the principles of C#, including object-oriented programming, polymorphism, and inheritance.', url: 'csharp' },
+        { name: 'Go', description: 'Learn about the principles of Go, including concurrency, garbage collection, and memory management.', url: 'go' },
+        { name: 'Java', description: 'Learn about the principles of Java, including object-oriented programming, polymorphism, and inheritance.', url: 'java' },
+        { name: 'JavaScript', description: 'Learn about the principles of JavaScript, including object-oriented programming, polymorphism, and inheritance.', url: 'javascript' },
+        { name: 'PHP', description: 'Learn about the principles of PHP, including object-oriented programming, polymorphism, and inheritance.', url: 'php' },
+        { name: 'Python', description: 'Learn about the principles of Python, including object-oriented programming, polymorphism, and inheritance.', url: 'python' },
+        { name: 'Ruby', description: 'Learn about the principles of Ruby, including object-oriented programming, polymorphism, and inheritance.', url: 'ruby' },
+        { name: 'Swift', description: 'Learn about the principles of Swift, including object-oriented programming, polymorphism, and inheritance.', url: 'swift' },
+        { name: 'TypeScript', description: 'Learn about the principles of TypeScript, including object-oriented programming, polymorphism, and inheritance.', url: 'typescript' },
+      ]
+    },
+  ];
 
   const descriptions = {
     'Algorithms': 'Learn about the principles of algorithms and their implementation in various programming languages.',
@@ -51,20 +97,20 @@ const Tutorials = () => {
   };
 
   const renderCategoryButtons = (isMobile = false) => {
-    return Object.keys(categories).map((category) => (
-      <div key={category} className="relative">
+    return categories.map((category) => (
+      <div key={category.name} className="relative">
         <button
           onClick={() => {
-            setActiveCategory(category);
+            setActiveCategory(category.name);
             setActiveSubject(null);
             if (isMobile) setIsMobileMenuOpen(false);
           }}
           className={`${
             isMobile 
               ? 'px-5 py-4 text-sm w-full flex items-center justify-between transition-all duration-200 active:scale-[0.98] group'
-              : 'w-full text-left px-4 py-3 rounded-lg'
+              : 'w-full text-left px-3 py-2 rounded-lg'
           } font-medium ${
-            activeCategory === category
+            activeCategory === category.name
               ? isMobile
                 ? 'text-indigo-600 dark:text-indigo-300'
                 : 'text-indigo-600 font-semibold bg-indigo-50/80 dark:bg-indigo-900/30 dark:text-indigo-200'
@@ -73,8 +119,8 @@ const Tutorials = () => {
                 : 'text-gray-700 hover:bg-gray-100/50 dark:text-gray-200 dark:hover:bg-gray-800/50'
           }`}
         >
-          <span className="flex-1 text-left">{category}</span>
-          {activeCategory === category && isMobile ? (
+          <span className="flex-1 text-left">{category.name}</span>
+          {activeCategory === category.name && isMobile ? (
             <ChevronRightIcon className="w-4 h-4 ml-3 opacity-90 transform transition-transform group-hover:translate-x-1" />
           ) : (
             <div className="w-4 h-4 ml-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -82,24 +128,24 @@ const Tutorials = () => {
             </div>
           )}
         </button>
-        {isMobile && <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200/50 dark:bg-gray-700/30" />}
+        {!isMobile && <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-200/50 dark:bg-gray-700/30" />}
       </div>
     ));
   };
 
   const renderSubcategories = () => {
-    const activeData = categories[activeCategory];
+    const activeCategoryData = categories.find(cat => cat.name === activeCategory);
     
-    if (Array.isArray(activeData)) {
-      return activeData.map((subcategory) => (
+    if (activeCategoryData) {
+      return activeCategoryData.subjects.map((subject) => (
         <motion.div
-          key={subcategory}
+          key={subject.name}
           whileHover={{ scale: 1.02 }}
           className="relative p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl transition-all duration-300 border-2 border-gray-200 hover:border-indigo-200 dark:border-gray-700 dark:hover:border-indigo-400 cursor-pointer group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm hover:shadow-md"
         >
           <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
             <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 group-hover:text-indigo-600 dark:text-gray-100 dark:group-hover:text-indigo-300">
-              {subcategory}
+              {subject.name}
             </h3>
             <motion.div
               initial={{ opacity: 0 }}
@@ -107,10 +153,10 @@ const Tutorials = () => {
               className="space-y-1.5 sm:space-y-2 md:space-y-4"
             >
               <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
-                {descriptions[subcategory]}
+                {subject.description}
               </p>
               <Link
-                to={`/tutorials/${subcategory.toLowerCase().replace(' ', '-')}`}
+                to={`/tutorials/${subject.url}`}
                 className="inline-flex items-center gap-1 mt-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-300 dark:hover:text-indigo-200 font-medium text-xs sm:text-sm md:text-base"
               >
                 Start Learning
@@ -119,45 +165,6 @@ const Tutorials = () => {
             </motion.div>
           </div>
         </motion.div>
-      ));
-    }
-
-    if (typeof activeData === 'object') {
-      return Object.entries(activeData).map(([category, subcategories]) => (
-        <div key={category}>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{category}</h3>
-          <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6 mb-6">
-            {subcategories.map((subcategory) => (
-              <motion.div
-                key={subcategory}
-                whileHover={{ scale: 1.02 }}
-                className="relative p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl transition-all duration-300 border-2 border-gray-200 hover:border-indigo-200 dark:border-gray-800 dark:hover:border-indigo-400 cursor-pointer group bg-white dark:bg-gray-800 shadow-sm hover:shadow-md"
-              >
-                <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
-                  <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
-                    {subcategory}
-                  </h3>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="space-y-1.5 sm:space-y-2 md:space-y-4"
-                  >
-                    <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {descriptions[subcategory]}
-                    </p>
-                    <Link
-                      to={`/tutorials/${subcategory.toLowerCase().replace(' ', '-')}`}
-                      className="inline-flex items-center gap-1 mt-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium text-xs sm:text-sm md:text-base"
-                    >
-                      Start Learning
-                      <ChevronRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5" />
-                    </Link>
-                  </motion.div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       ));
     }
 
@@ -247,7 +254,7 @@ const Tutorials = () => {
             className="hidden md:block w-full md:w-64 lg:w-72 p-4 border-b md:border-r border-gray-200 dark:border-gray-800 h-[calc(100vh-5rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent"
           >
             <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Career Path Tutorials</h2>
-            <div className="space-y-2">
+            <div className="space-y-0.5">
               {renderCategoryButtons()}
             </div>
           </motion.div>
