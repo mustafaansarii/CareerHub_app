@@ -160,9 +160,9 @@ EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    ],
     'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 15,  # 15 minutes
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',

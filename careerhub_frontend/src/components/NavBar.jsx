@@ -14,6 +14,7 @@ const navigation = [
   { name: 'DSA Sheet', href: '/dsa-sheet' },
   { name: 'Resources', href: '/resources' },
   { name: 'Roadmap', href: '/roadmap' },
+  { name: 'Tutorials', href: '/tutorials' },
 ]
 
 export default function NavBar() {

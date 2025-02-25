@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
@@ -9,6 +9,10 @@ from .serializers import QuestionSerializer, UserQuestionSerializer, ResumeSeria
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Prefetch, Exists, OuterRef, Case, When, Value, BooleanField
 from django.db.models.functions import Coalesce
+from google import genai
+import os
+from django.http import StreamingHttpResponse
+import json
 
 # Create your views here.
 
@@ -175,3 +179,26 @@ class RoadmapViewSet(viewsets.ReadOnlyModelViewSet):
         user_roadmap.last_accessed = timezone.now()
         user_roadmap.save()
         return Response({'last_accessed': user_roadmap.last_accessed})
+    
+    
+
+
+
+@api_view(['POST'])
+def generate(request):
+    try:
+        prompt = request.data.get('prompt')
+        if not prompt:
+            return Response({'error': 'Prompt is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        import google.generativeai as genai  # Correct import
+        
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(prompt)
+        
+        return Response({'response': response.text})
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

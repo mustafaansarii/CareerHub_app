@@ -20,7 +20,8 @@ import Roadmap from './pages/roadmap'
 import Resources from './pages/Resources'
 import ProtectedRoute from './components/ProtectedRoute'
 import NotFound from './pages/NotFound'
-
+import Tutorials from './pages/Tutorials'
+import DjangoTutorials from './tutorial_pages/Frameworks/backend/djangoTutorials'
 function App() {
   return (
     <Router>
@@ -101,6 +102,14 @@ function App() {
             <Resources/>
           </ProtectedRoute>
         }
+        />
+        <Route
+        path='/tutorials'
+        element={<Tutorials/>}
+        />
+        <Route
+        path='/tutorials/django'
+        element={<DjangoTutorials/>}
         />
         <Route path="*" element={<NotFound />} />
       </Routes>
